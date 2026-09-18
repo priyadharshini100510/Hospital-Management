@@ -49,7 +49,13 @@ const api = {
             }
 
             if (!response.ok) {
-                const errorMessage = (data && (data.message || data.error)) || `HTTP Error ${response.status}: ${response.statusText}`;
+                let errorMessage = `HTTP Error ${response.status}: ${response.statusText}`;
+                if (data) {
+                    if (typeof data.message === 'string') errorMessage = data.message;
+                    else if (typeof data.error === 'string') errorMessage = data.error;
+                    else if (data.error && typeof data.error.message === 'string') errorMessage = data.error.message;
+                    else if (data.fieldErrors) errorMessage = Object.values(data.fieldErrors).join(', ');
+                }
                 const error = new Error(errorMessage);
                 error.status = response.status;
                 error.data = data;
