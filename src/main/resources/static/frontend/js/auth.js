@@ -59,7 +59,8 @@ const auth = {
         params.append('username', email);
         params.append('password', password);
 
-        const response = await fetch('/auth/login', {
+        const baseUrl = typeof API_BASE !== 'undefined' ? API_BASE : (window.API_BASE || '');
+        const response = await fetch(baseUrl + '/auth/login', {
             method: 'POST',
             credentials: 'include',
             headers: {
