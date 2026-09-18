@@ -31,10 +31,10 @@ const api = {
             // If session expired or unauthorized on protected routes
             if (response.status === 401) {
                 const currentPath = window.location.pathname;
-                const isAuthPage = currentPath.endsWith('login.html') || currentPath.endsWith('register.html') || currentPath.endsWith('index.html') || currentPath === '/' || currentPath.endsWith('/frontend/');
+                const isAuthPage = currentPath.endsWith('login.html') || currentPath.endsWith('register.html') || currentPath.endsWith('index.html') || currentPath === '/' || currentPath.endsWith('/');
                 if (!isAuthPage) {
                     sessionStorage.removeItem('hms_user');
-                    window.location.href = '/frontend/login.html?expired=true';
+                    window.location.href = '/login.html?expired=true';
                     return null;
                 }
             }

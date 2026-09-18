@@ -34,7 +34,7 @@ const auth = {
     async requireAuth(expectedRole) {
         const user = await this.checkAuth();
         if (!user) {
-            window.location.href = '/frontend/login.html';
+            window.location.href = '/login.html';
             return null;
         }
 
@@ -42,11 +42,11 @@ const auth = {
         if (expectedRole && norm(user.role) !== norm(expectedRole)) {
             const r = norm(user.role);
             if (r === 'ROLE_ADMIN') {
-                window.location.href = '/frontend/admin/dashboard.html';
+                window.location.href = '/admin/dashboard.html';
             } else if (r === 'ROLE_DOCTOR') {
-                window.location.href = '/frontend/doctor/dashboard.html';
+                window.location.href = '/doctor/dashboard.html';
             } else {
-                window.location.href = '/frontend/patient/dashboard.html';
+                window.location.href = '/patient/dashboard.html';
             }
             return null;
         }
@@ -97,7 +97,7 @@ const auth = {
             // ignore error
         }
         this.setUser(null);
-        window.location.href = '/frontend/login.html?logout=true';
+        window.location.href = '/login.html?logout=true';
     }
 };
 
@@ -119,55 +119,55 @@ function renderNavbar(activeNav = '') {
         // Guest links
         navLinks = `
             <li class="nav-item">
-                <a class="nav-link ${activeNav === 'home' ? 'active fw-bold' : ''}" href="/frontend/index.html">Home</a>
+                <a class="nav-link ${activeNav === 'home' ? 'active fw-bold' : ''}" href="/index.html">Home</a>
             </li>
         `;
     } else if (role === 'ROLE_PATIENT') {
         navLinks = `
             <li class="nav-item">
-                <a class="nav-link ${activeNav === 'dashboard' ? 'active fw-bold' : ''}" href="/frontend/patient/dashboard.html">Dashboard</a>
+                <a class="nav-link ${activeNav === 'dashboard' ? 'active fw-bold' : ''}" href="/patient/dashboard.html">Dashboard</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link ${activeNav === 'doctors' ? 'active fw-bold' : ''}" href="/frontend/patient/doctors.html">Find a Doctor</a>
+                <a class="nav-link ${activeNav === 'doctors' ? 'active fw-bold' : ''}" href="/patient/doctors.html">Find a Doctor</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link ${activeNav === 'appointments' ? 'active fw-bold' : ''}" href="/frontend/patient/appointments.html">My Appointments</a>
+                <a class="nav-link ${activeNav === 'appointments' ? 'active fw-bold' : ''}" href="/patient/appointments.html">My Appointments</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link ${activeNav === 'history' ? 'active fw-bold' : ''}" href="/frontend/patient/history.html">Medical History</a>
+                <a class="nav-link ${activeNav === 'history' ? 'active fw-bold' : ''}" href="/patient/history.html">Medical History</a>
             </li>
         `;
     } else if (role === 'ROLE_DOCTOR') {
         navLinks = `
             <li class="nav-item">
-                <a class="nav-link ${activeNav === 'dashboard' ? 'active fw-bold' : ''}" href="/frontend/doctor/dashboard.html">Dashboard</a>
+                <a class="nav-link ${activeNav === 'dashboard' ? 'active fw-bold' : ''}" href="/doctor/dashboard.html">Dashboard</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link ${activeNav === 'appointments' ? 'active fw-bold' : ''}" href="/frontend/doctor/appointments.html">Appointments</a>
+                <a class="nav-link ${activeNav === 'appointments' ? 'active fw-bold' : ''}" href="/doctor/appointments.html">Appointments</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link ${activeNav === 'patients' ? 'active fw-bold' : ''}" href="/frontend/doctor/patients.html">Patients</a>
+                <a class="nav-link ${activeNav === 'patients' ? 'active fw-bold' : ''}" href="/doctor/patients.html">Patients</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link ${activeNav === 'availability' ? 'active fw-bold' : ''}" href="/frontend/doctor/availability.html">Availability</a>
+                <a class="nav-link ${activeNav === 'availability' ? 'active fw-bold' : ''}" href="/doctor/availability.html">Availability</a>
             </li>
         `;
     } else if (role === 'ROLE_ADMIN') {
         navLinks = `
             <li class="nav-item">
-                <a class="nav-link ${activeNav === 'dashboard' ? 'active fw-bold' : ''}" href="/frontend/admin/dashboard.html">Dashboard</a>
+                <a class="nav-link ${activeNav === 'dashboard' ? 'active fw-bold' : ''}" href="/admin/dashboard.html">Dashboard</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link ${activeNav === 'doctors' ? 'active fw-bold' : ''}" href="/frontend/admin/doctors.html">Doctors</a>
+                <a class="nav-link ${activeNav === 'doctors' ? 'active fw-bold' : ''}" href="/admin/doctors.html">Doctors</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link ${activeNav === 'patients' ? 'active fw-bold' : ''}" href="/frontend/admin/patients.html">Patients</a>
+                <a class="nav-link ${activeNav === 'patients' ? 'active fw-bold' : ''}" href="/admin/patients.html">Patients</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link ${activeNav === 'departments' ? 'active fw-bold' : ''}" href="/frontend/admin/departments.html">Departments</a>
+                <a class="nav-link ${activeNav === 'departments' ? 'active fw-bold' : ''}" href="/admin/departments.html">Departments</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link ${activeNav === 'appointments' ? 'active fw-bold' : ''}" href="/frontend/admin/appointments.html">Appointments</a>
+                <a class="nav-link ${activeNav === 'appointments' ? 'active fw-bold' : ''}" href="/admin/appointments.html">Appointments</a>
             </li>
         `;
     }
@@ -176,15 +176,15 @@ function renderNavbar(activeNav = '') {
     if (!user) {
         authSection = `
             <li class="nav-item">
-                <a class="nav-link ${activeNav === 'login' ? 'active fw-bold' : ''}" href="/frontend/login.html">Login</a>
+                <a class="nav-link ${activeNav === 'login' ? 'active fw-bold' : ''}" href="/login.html">Login</a>
             </li>
             <li class="nav-item">
-                <a class="btn btn-light btn-sm ms-lg-2 px-3 fw-medium text-dark shadow-sm" href="/frontend/register.html">Sign Up</a>
+                <a class="btn btn-light btn-sm ms-lg-2 px-3 fw-medium text-dark shadow-sm" href="/register.html">Sign Up</a>
             </li>
         `;
     } else {
-        const profileUrl = role === 'ROLE_PATIENT' ? '/frontend/patient/profile.html' :
-                           role === 'ROLE_DOCTOR' ? '/frontend/doctor/profile.html' : '#';
+        const profileUrl = role === 'ROLE_PATIENT' ? '/patient/profile.html' :
+                           role === 'ROLE_DOCTOR' ? '/doctor/profile.html' : '#';
         const profileItem = (role === 'ROLE_PATIENT' || role === 'ROLE_DOCTOR') ? `
             <li><a class="dropdown-item" href="${profileUrl}"><i class="bi bi-person me-2"></i>My Profile</a></li>
             <li><hr class="dropdown-divider"></li>
@@ -211,7 +211,7 @@ function renderNavbar(activeNav = '') {
     navContainer.innerHTML = `
         <nav class="navbar navbar-expand-lg navbar-dark app-navbar sticky-top shadow-sm">
             <div class="container-fluid px-4">
-                <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="/frontend/index.html">
+                <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="/index.html">
                     <i class="bi bi-heart-pulse-fill fs-4 text-warning"></i>
                     <span>MediCare HMS</span>
                 </a>
