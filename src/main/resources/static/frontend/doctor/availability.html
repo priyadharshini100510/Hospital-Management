@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Availability | MediCare HMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="/frontend/css/style.css"/>
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <div class="container py-4">
+        <div id="alert-container"></div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+                <h2 class="fw-bold mb-1">Practice Availability</h2>
+                <p class="text-muted small mb-0">Define recurring weekly consultation hours for dynamic patient booking</p>
+            </div>
+            <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addAvailModal">
+                <i class="bi bi-plus-circle me-1"></i> Add Time Slot
+            </button>
+        </div>
+
+        <div id="loading" class="text-center py-5">
+            <div class="loading-spinner mb-2"></div>
+            <p class="text-muted small">Loading schedule...</p>
+        </div>
+
+        <div class="card shadow-sm border-0" id="availCard" style="display: none;">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light text-uppercase small">
+                        <tr>
+                            <th>Day of Week</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th>Slot Duration</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="availList"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="noAvail" class="text-center py-5" style="display: none;">
+            <i class="bi bi-calendar-minus fs-1 text-muted"></i>
+            <h5 class="fw-bold mt-2">No Availability Configured</h5>
+            <p class="text-muted small">Add weekly working hours so patients can book appointments with you.</p>
+        </div>
+    </div>
+
+    <!-- Add Availability Modal -->
+    <div class="modal fade" id="addAvailModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Add Weekly Working Hours</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addAvailForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="dayOfWeek" class="form-label fw-semibold small">Day of the Week <span class="text-danger">*</span></label>
+                            <select id="dayOfWeek" class="form-select" required>
+                                <option value="">Select day...</option>
+                                <option value="MONDAY">Monday</option>
+                                <option value="TUESDAY">Tuesday</option>
+                                <option value="WEDNESDAY">Wednesday</option>
+                                <option value="THURSDAY">Thursday</option>
+                                <option value="FRIDAY">Friday</option>
+                                <option value="SATURDAY">Saturday</option>
+                                <option value="SUNDAY">Sunday</option>
+                            </select>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label for="startTime" class="form-label fw-semibold small">Start Time <span class="text-danger">*</span></label>
+                                <input type="time" id="startTime" class="form-control" required value="09:00">
+                            </div>
+                            <div class="col-6">
+                                <label for="endTime" class="form-label fw-semibold small">End Time <span class="text-danger">*</span></label>
+                                <input type="time" id="endTime" class="form-control" required value="17:00">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="slotDurationMinutes" class="form-label fw-semibold small">Slot Duration (Minutes)</label>
+                            <select id="slotDurationMinutes" class="form-select">
+                                <option value="15">15 Minutes</option>
+                                <option value="30" selected>30 Minutes (Recommended)</option>
+                                <option value="45">45 Minutes</option>
+                                <option value="60">60 Minutes</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" id="saveAvailBtn" class="btn btn-primary">Save Schedule</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/frontend/js/api.js"></script>
+    <script src="/frontend/js/auth.js"></script>
+    <script>
+        let modalInstance = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await auth.requireAuth('ROLE_DOCTOR');
+            if (!user) return;
+
+            renderNavbar('availability');
+            renderFooter();
+
+            modalInstance = new bootstrap.Modal(document.getElementById('addAvailModal'));
+
+            loadSchedule();
+
+            document.getElementById('addAvailForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const saveBtn = document.getElementById('saveAvailBtn');
+
+                let sTime = document.getElementById('startTime').value;
+                let eTime = document.getElementById('endTime').value;
+                if (sTime.length === 5) sTime += ':00';
+                if (eTime.length === 5) eTime += ':00';
+
+                const payload = {
+                    dayOfWeek: document.getElementById('dayOfWeek').value,
+                    startTime: sTime,
+                    endTime: eTime,
+                    slotDurationMinutes: parseInt(document.getElementById('slotDurationMinutes').value, 10)
+                };
+
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving...';
+
+                try {
+                    await api.post('/api/doctor/availability', payload);
+                    modalInstance.hide();
+                    showAlert('success', 'Working hours added successfully.');
+                    document.getElementById('addAvailForm').reset();
+                    loadSchedule();
+                } catch (err) {
+                    showAlert('danger', err.message || 'Failed to save availability slot.');
+                } finally {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'Save Schedule';
+                }
+            });
+        });
+
+        async function loadSchedule() {
+            const loading = document.getElementById('loading');
+            const card = document.getElementById('availCard');
+            const empty = document.getElementById('noAvail');
+            const tbody = document.getElementById('availList');
+
+            loading.style.display = 'block';
+            card.style.display = 'none';
+            empty.style.display = 'none';
+
+            try {
+                const res = await api.get('/api/doctor/availability');
+                loading.style.display = 'none';
+
+                const slots = (res && res.availabilities) || [];
+                if (slots.length === 0) {
+                    empty.style.display = 'block';
+                    return;
+                }
+
+                tbody.innerHTML = slots.map(s => `
+                    <tr>
+                        <td><span class="badge bg-primary px-3 py-2">${s.dayOfWeek}</span></td>
+                        <td class="fw-semibold">${s.startTime}</td>
+                        <td class="fw-semibold">${s.endTime}</td>
+                        <td><span class="badge bg-light text-dark border">${s.slotDurationMinutes || 30} mins</span></td>
+                        <td class="text-end">
+                            <button class="btn btn-outline-danger btn-sm" onclick="removeSlot(${s.id})">
+                                <i class="bi bi-trash me-1"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+
+                card.style.display = 'block';
+            } catch (err) {
+                loading.style.display = 'none';
+                showAlert('danger', 'Failed to load doctor schedule.');
+            }
+        }
+
+        async function removeSlot(id) {
+            if (!confirm('Are you sure you want to remove this availability slot?')) return;
+            try {
+                await api.delete(`/api/doctor/availability/${id}`);
+                showAlert('success', 'Availability slot removed.');
+                loadSchedule();
+            } catch (err) {
+                showAlert('danger', err.message || 'Could not delete slot.');
+            }
+        }
+    </script>
+</body>
+</html>

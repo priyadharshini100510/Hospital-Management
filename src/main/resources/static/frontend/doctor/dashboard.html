@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard | MediCare HMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="/frontend/css/style.css"/>
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <div class="container py-4">
+        <div id="alert-container"></div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+                <h2 class="fw-bold mb-1" id="doctorGreeting">Doctor Dashboard</h2>
+                <p class="text-muted small mb-0" id="doctorSpecialty">Specialist Physician</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="/frontend/doctor/appointments.html" class="btn btn-primary shadow-sm">
+                    <i class="bi bi-calendar3 me-1"></i> All Appointments
+                </a>
+                <a href="/frontend/doctor/availability.html" class="btn btn-outline-secondary">
+                    <i class="bi bi-clock me-1"></i> Manage Schedule
+                </a>
+            </div>
+        </div>
+
+        <!-- Quick Stats Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="card card-stat p-3 shadow-sm border-0">
+                    <div class="text-muted small fw-semibold text-uppercase">Today's Total</div>
+                    <div class="stat-value" id="todayTotal">0</div>
+                    <div class="text-muted small">Consultations scheduled for today</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-3 shadow-sm border-0" style="border-left: 5px solid #d97706 !important;">
+                    <div class="text-muted small fw-semibold text-uppercase">Pending Action</div>
+                    <div class="stat-value text-warning" id="todayPending">0</div>
+                    <div class="text-muted small">Awaiting confirmation or review</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-3 shadow-sm border-0" style="border-left: 5px solid #10b981 !important;">
+                    <div class="text-muted small fw-semibold text-uppercase">Completed Today</div>
+                    <div class="stat-value text-success" id="todayCompleted">0</div>
+                    <div class="text-muted small">Consultations marked completed</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Appointments Section -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-calendar-day me-2 text-primary"></i>Today's Appointments</h5>
+                <span class="badge bg-light text-muted" id="todayDateLabel">Today</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light text-uppercase small">
+                        <tr>
+                            <th>Time</th>
+                            <th>Patient Name</th>
+                            <th>Reason for Visit</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="todayList">
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted small">
+                                <div class="loading-spinner mb-1"></div><br>Loading today's schedule...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/frontend/js/api.js"></script>
+    <script src="/frontend/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await auth.requireAuth('ROLE_DOCTOR');
+            if (!user) return;
+
+            renderNavbar('dashboard');
+            renderFooter();
+
+            document.getElementById('todayDateLabel').textContent = new Date().toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+
+            try {
+                const data = await api.get('/api/doctor/dashboard');
+                document.getElementById('doctorGreeting').textContent = `Welcome, Dr. ${data.doctorName || user.name || ''}`;
+                document.getElementById('doctorSpecialty').textContent = data.specialization || 'Attending Physician';
+                document.getElementById('todayTotal').textContent = data.todayTotal || 0;
+                document.getElementById('todayPending').textContent = data.todayPending || 0;
+                document.getElementById('todayCompleted').textContent = data.todayCompleted || 0;
+
+                const tbody = document.getElementById('todayList');
+                const appts = data.todaysAppointments || [];
+
+                if (appts.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-calendar-check fs-2 d-block mb-2 text-muted"></i>
+                                No appointments scheduled for today.
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = appts.map(a => `
+                    <tr>
+                        <td><strong class="text-dark">${a.time}</strong></td>
+                        <td>
+                            <div class="fw-semibold text-dark">${a.patientName}</div>
+                            <small class="text-muted">ID: #${a.patientId}</small>
+                        </td>
+                        <td><small class="text-muted">${a.reason || 'General checkup'}</small></td>
+                        <td><span class="badge badge-status badge-${a.status}">${a.status}</span></td>
+                        <td class="text-end">
+                            <a href="/frontend/doctor/appointment-detail.html?id=${a.id}" class="btn btn-sm btn-outline-primary fw-medium">
+                                Manage &rarr;
+                            </a>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                showAlert('danger', 'Failed to load doctor dashboard data.');
+            }
+        });
+    </script>
+</body>
+</html>

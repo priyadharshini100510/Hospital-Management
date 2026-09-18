@@ -1,0 +1,171 @@
+:root {
+  --brand-primary: #0f766e;
+  --brand-primary-dark: #0b5b55;
+  --brand-accent: #2563eb;
+  --brand-bg: #f8fafc;
+  --brand-card-border: #e2e8f0;
+  --status-pending: #b45309;
+  --status-confirmed: #1d4ed8;
+  --status-completed: #15803d;
+  --status-cancelled: #b91c1c;
+  --status-rejected: #6b7280;
+  --status-noshow: #92400e;
+}
+
+body {
+  background-color: var(--brand-bg);
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: #1e293b;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-navbar {
+  background: linear-gradient(90deg, var(--brand-primary) 0%, var(--brand-primary-dark) 100%);
+  z-index: 1030;
+}
+
+.app-navbar .nav-link {
+  font-weight: 500;
+  transition: color 0.15s ease-in-out;
+}
+
+.app-navbar .nav-link:hover {
+  color: #a7f3d0 !important;
+}
+
+.app-navbar .nav-link.active {
+  color: #ffffff !important;
+  border-bottom: 2px solid #5eead4;
+}
+
+.hero-section {
+  background: linear-gradient(135deg, var(--brand-primary) 0%, #1e3a8a 100%);
+  color: white;
+  padding: 4.5rem 0;
+  border-radius: 0 0 2rem 2rem;
+  box-shadow: 0 10px 25px -5px rgba(15, 118, 110, 0.25);
+}
+
+.card {
+  border: 1px solid var(--brand-card-border);
+  border-radius: 0.85rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-stat {
+  border-left: 5px solid var(--brand-primary);
+}
+
+.card-stat .stat-value {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--brand-primary-dark);
+}
+
+.btn-primary {
+  background-color: var(--brand-primary);
+  border-color: var(--brand-primary);
+}
+
+.btn-primary:hover, .btn-primary:focus {
+  background-color: var(--brand-primary-dark);
+  border-color: var(--brand-primary-dark);
+}
+
+.btn-outline-primary {
+  color: var(--brand-primary);
+  border-color: var(--brand-primary);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--brand-primary);
+  border-color: var(--brand-primary);
+  color: white;
+}
+
+.doctor-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.doctor-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.1);
+}
+
+.doctor-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--brand-primary), #0284c7);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.4rem;
+}
+
+.badge-status {
+  font-size: 0.78rem;
+  padding: 0.4em 0.75em;
+  border-radius: 999px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.badge-PENDING { background-color: #fef3c7; color: var(--status-pending); border: 1px solid #fde68a; }
+.badge-CONFIRMED { background-color: #dbeafe; color: var(--status-confirmed); border: 1px solid #bfdbfe; }
+.badge-COMPLETED { background-color: #dcfce7; color: var(--status-completed); border: 1px solid #bbf7d0; }
+.badge-CANCELLED { background-color: #fee2e2; color: var(--status-cancelled); border: 1px solid #fecaca; }
+.badge-REJECTED { background-color: #f3f4f6; color: var(--status-rejected); border: 1px solid #e5e7eb; }
+.badge-NO_SHOW { background-color: #fef3c7; color: var(--status-noshow); border: 1px solid #fde68a; }
+
+.slot-btn {
+  min-width: 84px;
+  font-weight: 500;
+}
+
+.auth-card {
+  max-width: 480px;
+  margin: 3.5rem auto;
+}
+
+.section-title {
+  font-weight: 700;
+  color: var(--brand-primary-dark);
+}
+
+footer {
+  background-color: #0b1f1d;
+  color: #cbd5e1;
+  padding: 2.5rem 0;
+  margin-top: auto;
+}
+
+footer a {
+  color: #a7f3d0;
+  text-decoration: none;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+
+/* Spinner overlay for async operations */
+.loading-spinner {
+  display: inline-block;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 3px solid rgba(15, 118, 110, 0.2);
+  border-radius: 50%;
+  border-top-color: var(--brand-primary);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

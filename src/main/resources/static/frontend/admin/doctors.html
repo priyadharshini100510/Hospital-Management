@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Doctors | MediCare HMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="/frontend/css/style.css"/>
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <div class="container py-4">
+        <div id="alert-container"></div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+                <h2 class="fw-bold mb-1">Doctors Directory</h2>
+                <p class="text-muted small mb-0">Manage practicing medical staff, department assignments, and availability</p>
+            </div>
+            <div class="d-flex gap-2">
+                <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Search doctor or specialty..." style="max-width: 250px;">
+                <a href="/frontend/admin/doctor-form.html" class="btn btn-primary btn-sm shadow-sm text-nowrap">
+                    <i class="bi bi-person-plus me-1"></i> Add Doctor
+                </a>
+            </div>
+        </div>
+
+        <div id="loading" class="text-center py-5">
+            <div class="loading-spinner mb-2"></div>
+            <p class="text-muted small">Loading doctors...</p>
+        </div>
+
+        <div class="card shadow-sm border-0" id="doctorsCard" style="display: none;">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light text-uppercase small">
+                        <tr>
+                            <th>Doctor</th>
+                            <th>Department</th>
+                            <th>Specialization</th>
+                            <th>Experience</th>
+                            <th>Fee</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="doctorsList"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/frontend/js/api.js"></script>
+    <script src="/frontend/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await auth.requireAuth('ROLE_ADMIN');
+            if (!user) return;
+
+            renderNavbar('doctors');
+            renderFooter();
+
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', () => loadDoctors(searchInput.value.trim()));
+
+            loadDoctors();
+        });
+
+        async function loadDoctors(q = '') {
+            const loading = document.getElementById('loading');
+            const card = document.getElementById('doctorsCard');
+            const tbody = document.getElementById('doctorsList');
+
+            try {
+                const url = q ? `/api/admin/doctors?q=${encodeURIComponent(q)}` : '/api/admin/doctors';
+                const docs = await api.get(url);
+                loading.style.display = 'none';
+
+                tbody.innerHTML = docs.map(d => `
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="doctor-avatar" style="width: 38px; height: 38px; font-size: 0.95rem;">
+                                    ${d.name ? d.name.charAt(0).toUpperCase() : 'D'}
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark">Dr. ${d.name}</div>
+                                    <small class="text-muted">${d.email || ''}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge bg-light text-primary border">${d.department || 'General'}</span></td>
+                        <td class="small text-muted">${d.specialization || '-'}</td>
+                        <td class="small text-muted">${d.experienceYears || 0} Years</td>
+                        <td class="fw-semibold text-dark">$${d.consultationFee || 0}</td>
+                        <td>
+                            <button class="btn btn-sm ${d.active ? 'btn-success-subtle text-success' : 'btn-danger-subtle text-danger'} fw-semibold border-0" onclick="toggleActive(${d.id}, ${!d.active})">
+                                <i class="bi ${d.active ? 'bi-check-circle-fill' : 'bi-dash-circle-fill'} me-1"></i>
+                                ${d.active ? 'Active' : 'Inactive'}
+                            </button>
+                        </td>
+                        <td class="text-end">
+                            <a href="/frontend/admin/doctor-form.html?id=${d.id}" class="btn btn-outline-primary btn-sm me-1">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button class="btn btn-outline-danger btn-sm" onclick="deleteDoctor(${d.id})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+
+                card.style.display = 'block';
+            } catch (err) {
+                loading.style.display = 'none';
+                showAlert('danger', 'Failed to load doctors directory.');
+            }
+        }
+
+        async function toggleActive(id, newActive) {
+            try {
+                await api.put(`/api/admin/doctors/${id}/toggle-active`, { active: newActive });
+                showAlert('success', `Doctor set to ${newActive ? 'active' : 'inactive'}.`);
+                loadDoctors();
+            } catch (err) {
+                showAlert('danger', 'Failed to update doctor status.');
+            }
+        }
+
+        async function deleteDoctor(id) {
+            if (!confirm('Are you sure you want to deactivate and remove this doctor?')) return;
+            try {
+                await api.delete(`/api/admin/doctors/${id}`);
+                showAlert('success', 'Doctor removed.');
+                loadDoctors();
+            } catch (err) {
+                showAlert('danger', err.message || 'Failed to remove doctor.');
+            }
+        }
+    </script>
+</body>
+</html>

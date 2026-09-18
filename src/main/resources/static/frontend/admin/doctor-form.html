@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Form | MediCare HMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="/frontend/css/style.css"/>
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <div class="container py-4">
+        <div id="alert-container"></div>
+
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/frontend/admin/dashboard.html">Admin</a></li>
+                <li class="breadcrumb-item"><a href="/frontend/admin/doctors.html">Doctors</a></li>
+                <li class="breadcrumb-item active" id="breadcrumbAction">New Doctor</li>
+            </ol>
+        </nav>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0 p-4">
+                    <h3 class="fw-bold text-dark mb-1" id="formHeading">Register Practicing Doctor</h3>
+                    <p class="text-muted small mb-4">Provide physician credentials, departmental placement, and consultation details</p>
+
+                    <form id="doctorForm">
+                        <input type="hidden" id="doctorId">
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="fullName" class="form-label fw-semibold small">Full Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="fullName" required placeholder="Dr. Jane Smith">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label fw-semibold small">Email Address <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="email" required placeholder="doctor@medicare.com">
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="password" class="form-label fw-semibold small" id="passwordLabel">Login Password <span class="text-danger" id="passwordReq">*</span></label>
+                                <input type="password" class="form-control" id="password" minlength="6" placeholder="At least 6 characters">
+                                <small class="text-muted" id="passwordHelp" style="display: none;">Leave blank to keep existing password.</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label fw-semibold small">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" placeholder="+1 (555) 000-0000">
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="departmentId" class="form-label fw-semibold small">Department <span class="text-danger">*</span></label>
+                                <select class="form-select" id="departmentId" required>
+                                    <option value="">Select Department...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="specialization" class="form-label fw-semibold small">Specialization <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="specialization" required placeholder="e.g. Interventional Cardiology">
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label for="qualification" class="form-label fw-semibold small">Qualification</label>
+                                <input type="text" class="form-control" id="qualification" placeholder="e.g. MBBS, MD">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="experienceYears" class="form-label fw-semibold small">Experience (Years)</label>
+                                <input type="number" class="form-control" id="experienceYears" min="0" value="5">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="consultationFee" class="form-label fw-semibold small">Consultation Fee ($)</label>
+                                <input type="number" class="form-control" id="consultationFee" min="0" step="0.01" value="50.00">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="bio" class="form-label fw-semibold small">Physician Bio / Overview</label>
+                            <textarea class="form-control" id="bio" rows="3" placeholder="Brief summary of experience, awards, background..."></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="/frontend/admin/doctors.html" class="btn btn-light">Cancel</a>
+                            <button type="submit" id="saveBtn" class="btn btn-primary px-4 fw-semibold shadow-sm">
+                                <i class="bi bi-save me-1"></i> Save Doctor
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/frontend/js/api.js"></script>
+    <script src="/frontend/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await auth.requireAuth('ROLE_ADMIN');
+            if (!user) return;
+
+            renderNavbar('doctors');
+            renderFooter();
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const doctorId = urlParams.get('id');
+
+            // Load Departments
+            try {
+                const depts = await api.get('/api/admin/departments');
+                const deptSelect = document.getElementById('departmentId');
+                depts.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d.id;
+                    opt.textContent = d.name;
+                    deptSelect.appendChild(opt);
+                });
+            } catch (err) {
+                showAlert('danger', 'Failed to load departments.');
+            }
+
+            // If Edit Mode
+            if (doctorId) {
+                document.getElementById('doctorId').value = doctorId;
+                document.getElementById('breadcrumbAction').textContent = 'Edit Doctor';
+                document.getElementById('formHeading').textContent = 'Edit Doctor Details';
+                document.getElementById('passwordReq').style.display = 'none';
+                document.getElementById('passwordHelp').style.display = 'block';
+
+                try {
+                    const doc = await api.get(`/api/admin/doctors`);
+                    const target = doc.find(d => String(d.id) === String(doctorId));
+                    if (target) {
+                        document.getElementById('fullName').value = target.name || '';
+                        document.getElementById('email').value = target.email || '';
+                        document.getElementById('phone').value = target.phone || '';
+                        document.getElementById('specialization').value = target.specialization || '';
+                        document.getElementById('qualification').value = target.qualification || '';
+                        document.getElementById('experienceYears').value = target.experienceYears || 0;
+                        document.getElementById('consultationFee').value = target.consultationFee || 0;
+                        document.getElementById('bio').value = target.bio || '';
+                        if (target.departmentId) {
+                            document.getElementById('departmentId').value = target.departmentId;
+                        }
+                    }
+                } catch (err) {
+                    showAlert('danger', 'Could not load existing doctor profile.');
+                }
+            }
+
+            // Submit Handler
+            const doctorForm = document.getElementById('doctorForm');
+            const saveBtn = document.getElementById('saveBtn');
+
+            doctorForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const id = document.getElementById('doctorId').value;
+                const pwd = document.getElementById('password').value;
+
+                if (!id && (!pwd || pwd.length < 6)) {
+                    showAlert('warning', 'Password must be at least 6 characters.');
+                    return;
+                }
+
+                const payload = {
+                    fullName: document.getElementById('fullName').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    password: pwd || null,
+                    phone: document.getElementById('phone').value.trim() || null,
+                    departmentId: parseInt(document.getElementById('departmentId').value, 10),
+                    specialization: document.getElementById('specialization').value.trim(),
+                    qualification: document.getElementById('qualification').value.trim() || null,
+                    experienceYears: parseInt(document.getElementById('experienceYears').value || 0, 10),
+                    consultationFee: parseFloat(document.getElementById('consultationFee').value || 0),
+                    bio: document.getElementById('bio').value.trim() || null
+                };
+
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving...';
+
+                try {
+                    if (id) {
+                        await api.put(`/api/admin/doctors/${id}`, payload);
+                        showAlert('success', 'Doctor updated successfully.');
+                    } else {
+                        await api.post('/api/admin/doctors', payload);
+                        showAlert('success', 'Doctor created successfully.');
+                    }
+                    setTimeout(() => {
+                        window.location.href = '/frontend/admin/doctors.html';
+                    }, 1200);
+                } catch (err) {
+                    showAlert('danger', err.message || 'Operation failed.');
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'Save Doctor';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediCare HMS | Modern Healthcare Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="/frontend/css/style.css"/>
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <div class="hero-section text-center">
+        <div class="container py-4">
+            <span class="badge bg-white text-dark px-3 py-2 rounded-pill fw-semibold mb-3 shadow-sm">
+                <i class="bi bi-shield-check text-primary me-1"></i> Trusted & Secure Healthcare
+            </span>
+            <h1 class="display-4 fw-bold mb-3">Healthcare Management Made Simple</h1>
+            <p class="lead mb-4 mx-auto" style="max-width: 680px; opacity: 0.92;">
+                Book consultations, access your digital medical records, and connect with top specialized doctors through our decoupled, high-performance platform.
+            </p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap" id="hero-actions">
+                <a href="/frontend/login.html" class="btn btn-warning btn-lg px-4 fw-semibold text-dark shadow">
+                    <i class="bi bi-calendar-check me-2"></i> Book Appointment
+                </a>
+                <a href="/frontend/register.html" class="btn btn-outline-light btn-lg px-4 fw-semibold">
+                    <i class="bi bi-person-plus me-2"></i> Register as Patient
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-5">
+        <div class="row g-4 text-center mb-5">
+            <div class="col-md-4">
+                <div class="card h-100 p-4 shadow-sm border-0">
+                    <div class="doctor-avatar mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.25rem;">
+                        <i class="bi bi-person-badge"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Specialized Doctors</h5>
+                    <p class="text-muted small">Explore our network of certified physicians across diverse medical departments and check verified availability.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 p-4 shadow-sm border-0">
+                    <div class="doctor-avatar mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.25rem; background: linear-gradient(135deg, #2563eb, #3b82f6);">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Real-Time Slots</h5>
+                    <p class="text-muted small">Pick available time slots dynamically generated with instant conflict detection and booking validation.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 p-4 shadow-sm border-0">
+                    <div class="doctor-avatar mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.25rem; background: linear-gradient(135deg, #059669, #10b981);">
+                        <i class="bi bi-file-earmark-medical"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Digital Medical History</h5>
+                    <p class="text-muted small">Access consultation notes, diagnoses, and digital prescriptions anytime with end-to-end security.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 bg-light p-4 p-md-5 rounded-4 shadow-sm">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h3 class="fw-bold text-dark mb-2">Need immediate medical attention?</h3>
+                    <p class="text-muted mb-lg-0">Log in to your patient portal to schedule a consultation with available specialists today.</p>
+                </div>
+                <div class="col-lg-4 text-lg-end">
+                    <a href="/frontend/login.html" class="btn btn-primary btn-lg px-4">Patient Portal</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/frontend/js/api.js"></script>
+    <script src="/frontend/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            renderNavbar('home');
+            renderFooter();
+
+            const user = await auth.checkAuth();
+            if (user) {
+                renderNavbar('home');
+                const heroActions = document.getElementById('hero-actions');
+                let dashUrl = '/frontend/patient/dashboard.html';
+                if (user.role === 'ROLE_ADMIN') dashUrl = '/frontend/admin/dashboard.html';
+                else if (user.role === 'ROLE_DOCTOR') dashUrl = '/frontend/doctor/dashboard.html';
+
+                heroActions.innerHTML = `
+                    <a href="${dashUrl}" class="btn btn-warning btn-lg px-4 fw-semibold text-dark shadow">
+                        <i class="bi bi-speedometer2 me-2"></i> Go to Dashboard
+                    </a>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

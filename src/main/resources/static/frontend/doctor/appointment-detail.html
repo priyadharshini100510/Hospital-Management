@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Detail & Consultation | MediCare HMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="/frontend/css/style.css"/>
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <div class="container py-4">
+        <div id="alert-container"></div>
+
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/frontend/doctor/dashboard.html">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="/frontend/doctor/appointments.html">Appointments</a></li>
+                <li class="breadcrumb-item active" id="breadcrumbApptId">Appointment #</li>
+            </ol>
+        </nav>
+
+        <div class="row g-4">
+            <!-- Patient & Appointment Overview -->
+            <div class="col-lg-5">
+                <div class="card shadow-sm border-0 p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <span class="badge badge-status" id="apptStatusBadge">STATUS</span>
+                            <h4 class="fw-bold mt-2 mb-1" id="patientName">Patient Name</h4>
+                            <p class="text-muted small mb-0" id="patientPhone">Phone</p>
+                        </div>
+                    </div>
+
+                    <div class="list-group list-group-flush small">
+                        <div class="list-group-item px-0 d-flex justify-content-between">
+                            <span class="text-muted">Appointment ID</span>
+                            <span class="fw-bold" id="apptIdText">#</span>
+                        </div>
+                        <div class="list-group-item px-0 d-flex justify-content-between">
+                            <span class="text-muted">Date</span>
+                            <span class="fw-semibold" id="apptDateText">-</span>
+                        </div>
+                        <div class="list-group-item px-0 d-flex justify-content-between">
+                            <span class="text-muted">Time</span>
+                            <span class="fw-semibold" id="apptTimeText">-</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <h6 class="fw-bold small text-uppercase text-muted">Reason for Consultation</h6>
+                        <p class="text-dark bg-light p-3 rounded small mb-0" id="reasonText">None provided</p>
+                    </div>
+
+                    <div id="cancelReasonSection" class="mt-3" style="display: none;">
+                        <h6 class="fw-bold small text-uppercase text-danger">Cancellation Reason</h6>
+                        <p class="text-danger bg-danger-subtle p-3 rounded small mb-0" id="cancelReasonText"></p>
+                    </div>
+
+                    <!-- Quick Status Actions -->
+                    <div class="mt-4 pt-3 border-top" id="statusActions">
+                        <h6 class="fw-bold small text-uppercase text-muted mb-2">Actions</h6>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="btn btn-outline-success btn-sm" id="confirmBtn" style="display: none;">
+                                <i class="bi bi-check-lg me-1"></i> Confirm Appointment
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" id="cancelBtn" style="display: none;">
+                                <i class="bi bi-x-circle me-1"></i> Cancel Appointment
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Consultation Notes & Medical Prescription -->
+            <div class="col-lg-7">
+                <div class="card shadow-sm border-0 p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h4 class="fw-bold text-dark mb-1">Clinical Consultation & Notes</h4>
+                            <p class="text-muted small mb-0">Record medical diagnosis, prescriptions, and follow-up advice</p>
+                        </div>
+                    </div>
+
+                    <!-- View Existing Notes if already completed -->
+                    <div id="existingNotesView" style="display: none;">
+                        <div class="alert alert-success d-flex align-items-center mb-4">
+                            <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                            <span>This consultation has been completed and saved to the patient's medical history.</span>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="fw-bold small text-uppercase text-muted">Diagnosis</h6>
+                            <div class="p-3 bg-light rounded text-dark" id="viewDiagnosis"></div>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="fw-bold small text-uppercase text-muted">Prescription & Medication</h6>
+                            <div class="p-3 bg-light rounded text-dark font-monospace small" id="viewPrescription"></div>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="fw-bold small text-uppercase text-muted">Follow-up Advice</h6>
+                            <div class="p-3 bg-light rounded text-dark" id="viewFollowUp"></div>
+                        </div>
+                    </div>
+
+                    <!-- Input Form to complete consultation -->
+                    <form id="notesForm" style="display: none;">
+                        <div class="mb-3">
+                            <label for="diagnosis" class="form-label fw-semibold small">Clinical Diagnosis <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="diagnosis" rows="3" required placeholder="Diagnosis and assessment details..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="prescription" class="form-label fw-semibold small">Prescription & Treatment Plan</label>
+                            <textarea class="form-control font-monospace small" id="prescription" rows="4" placeholder="e.g. Paracetamol 500mg - 1 tab tid for 3 days&#10;Amoxicillin 250mg - 1 cap bid for 5 days"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="followUpAdvice" class="form-label fw-semibold small">Follow-up Advice & Instructions</label>
+                            <input type="text" class="form-control" id="followUpAdvice" placeholder="e.g. Review in 1 week if fever persists">
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="doctorNotes" class="form-label fw-semibold small">Internal Doctor Notes</label>
+                            <textarea class="form-control" id="doctorNotes" rows="2" placeholder="Additional observations or laboratory tests requested..."></textarea>
+                        </div>
+
+                        <button type="submit" id="saveNotesBtn" class="btn btn-primary w-100 py-2 fw-semibold shadow-sm">
+                            <i class="bi bi-check2-circle me-1"></i> Complete Consultation & Save Records
+                        </button>
+                    </form>
+
+                    <div id="notesDisabledNotice" class="alert alert-secondary text-center small mb-0" style="display: none;">
+                        Consultation notes can only be entered for confirmed or active appointments.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/frontend/js/api.js"></script>
+    <script src="/frontend/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await auth.requireAuth('ROLE_DOCTOR');
+            if (!user) return;
+
+            renderNavbar('appointments');
+            renderFooter();
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const apptId = urlParams.get('id');
+
+            if (!apptId) {
+                showAlert('danger', 'Appointment ID missing from URL.');
+                return;
+            }
+
+            document.getElementById('breadcrumbApptId').textContent = `Appointment #${apptId}`;
+            document.getElementById('apptIdText').textContent = `#${apptId}`;
+
+            async function loadDetail() {
+                try {
+                    const a = await api.get(`/api/doctor/appointments/${apptId}`);
+                    document.getElementById('patientName').textContent = a.patientName || 'Patient';
+                    document.getElementById('patientPhone').textContent = a.patientPhone ? `Phone: ${a.patientPhone}` : 'No phone provided';
+                    document.getElementById('apptDateText').textContent = a.date;
+                    document.getElementById('apptTimeText').textContent = a.time;
+                    document.getElementById('reasonText').textContent = a.reason || 'Routine Consultation';
+
+                    const badge = document.getElementById('apptStatusBadge');
+                    badge.textContent = a.status;
+                    badge.className = `badge badge-status badge-${a.status}`;
+
+                    if (a.cancelReason) {
+                        document.getElementById('cancelReasonSection').style.display = 'block';
+                        document.getElementById('cancelReasonText').textContent = a.cancelReason;
+                    }
+
+                    const confirmBtn = document.getElementById('confirmBtn');
+                    const cancelBtn = document.getElementById('cancelBtn');
+                    const notesForm = document.getElementById('notesForm');
+                    const existingNotesView = document.getElementById('existingNotesView');
+                    const notesDisabledNotice = document.getElementById('notesDisabledNotice');
+
+                    // Button visibilities
+                    if (a.status === 'PENDING') {
+                        confirmBtn.style.display = 'inline-block';
+                        cancelBtn.style.display = 'inline-block';
+                        notesForm.style.display = 'block';
+                        existingNotesView.style.display = 'none';
+                        notesDisabledNotice.style.display = 'none';
+                    } else if (a.status === 'CONFIRMED') {
+                        confirmBtn.style.display = 'none';
+                        cancelBtn.style.display = 'inline-block';
+                        notesForm.style.display = 'block';
+                        existingNotesView.style.display = 'none';
+                        notesDisabledNotice.style.display = 'none';
+                    } else if (a.status === 'COMPLETED') {
+                        confirmBtn.style.display = 'none';
+                        cancelBtn.style.display = 'none';
+                        notesForm.style.display = 'none';
+                        existingNotesView.style.display = 'block';
+                        notesDisabledNotice.style.display = 'none';
+
+                        if (a.notes) {
+                            document.getElementById('viewDiagnosis').textContent = a.notes.diagnosis || 'None';
+                            document.getElementById('viewPrescription').textContent = a.notes.prescription || 'None';
+                            document.getElementById('viewFollowUp').textContent = a.notes.followUpAdvice || 'None';
+                        }
+                    } else {
+                        // CANCELLED or REJECTED
+                        confirmBtn.style.display = 'none';
+                        cancelBtn.style.display = 'none';
+                        notesForm.style.display = 'none';
+                        existingNotesView.style.display = 'none';
+                        notesDisabledNotice.style.display = 'block';
+                        notesDisabledNotice.textContent = `This appointment was ${a.status.toLowerCase()}. Consultation notes cannot be filed.`;
+                    }
+                } catch (err) {
+                    showAlert('danger', 'Failed to load appointment details.');
+                }
+            }
+
+            // Confirm Appointment Action
+            document.getElementById('confirmBtn').addEventListener('click', async () => {
+                if (!confirm('Confirm this appointment with the patient?')) return;
+                try {
+                    await api.put(`/api/doctor/appointments/${apptId}/status`, { status: 'CONFIRMED' });
+                    showAlert('success', 'Appointment confirmed successfully.');
+                    loadDetail();
+                } catch (err) {
+                    showAlert('danger', err.message || 'Could not confirm appointment.');
+                }
+            });
+
+            // Cancel Appointment Action
+            document.getElementById('cancelBtn').addEventListener('click', async () => {
+                const reason = prompt('Please enter the reason for cancellation:');
+                if (reason === null) return;
+                try {
+                    await api.put(`/api/doctor/appointments/${apptId}/status`, { status: 'CANCELLED', reason: reason || 'Cancelled by physician' });
+                    showAlert('info', 'Appointment cancelled.');
+                    loadDetail();
+                } catch (err) {
+                    showAlert('danger', err.message || 'Could not cancel appointment.');
+                }
+            });
+
+            // Save Notes & Complete Action
+            document.getElementById('notesForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const saveBtn = document.getElementById('saveNotesBtn');
+
+                const payload = {
+                    diagnosis: document.getElementById('diagnosis').value.trim(),
+                    prescription: document.getElementById('prescription').value.trim() || null,
+                    followUpAdvice: document.getElementById('followUpAdvice').value.trim() || null,
+                    notes: document.getElementById('doctorNotes').value.trim() || null
+                };
+
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Completing consultation...';
+
+                try {
+                    await api.post(`/api/doctor/appointments/${apptId}/notes`, payload);
+                    showAlert('success', 'Consultation notes recorded. Appointment completed.');
+                    loadDetail();
+                } catch (err) {
+                    showAlert('danger', err.message || 'Failed to save notes.');
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = '<i class="bi bi-check2-circle me-1"></i> Complete Consultation & Save Records';
+                }
+            });
+
+            loadDetail();
+        });
+    </script>
+</body>
+</html>
