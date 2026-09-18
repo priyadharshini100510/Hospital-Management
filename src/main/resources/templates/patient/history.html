@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Medical History')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<div th:replace="~{fragments/alerts :: alerts}"></div>
+
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="section-title mb-1"><i class="bi bi-file-earmark-medical me-2"></i>Medical History & Records</h3>
+            <p class="text-muted mb-0">Records of your completed consultations, diagnoses, and doctor prescriptions.</p>
+        </div>
+        <button onclick="window.print()" class="btn btn-outline-secondary d-none d-md-inline-block">
+            <i class="bi bi-printer me-1"></i>Print Records
+        </button>
+    </div>
+
+    <!-- Empty State -->
+    <div class="card shadow-sm text-center py-5" th:if="${#lists.isEmpty(appointments)}">
+        <div class="card-body">
+            <i class="bi bi-journal-medical text-muted display-4 mb-3 d-block"></i>
+            <h5 class="text-secondary">No completed medical records found</h5>
+            <p class="text-muted">Once your doctor completes a consultation and enters clinical notes, your medical records will appear here.</p>
+            <a th:href="@{/patient/appointments}" class="btn btn-primary mt-2">
+                <i class="bi bi-calendar-check me-1"></i>Check My Appointments
+            </a>
+        </div>
+    </div>
+
+    <!-- History Timeline / Cards -->
+    <div class="row g-4" th:if="${not #lists.isEmpty(appointments)}">
+        <div class="col-12" th:each="apt : ${appointments}">
+            <div class="card shadow-sm border-start border-4 border-primary">
+                <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="doctor-avatar me-3" style="width: 44px; height: 44px; font-size: 1.1rem;"
+                             th:text="${#strings.substring(apt.doctor.user.fullName,0,1)}">D</div>
+                        <div>
+                            <h5 class="mb-0 fw-bold" th:text="${apt.doctor.user.fullName}">Dr. Name</h5>
+                            <small class="text-muted">
+                                <span th:text="${apt.doctor.specialization}">Specialization</span>
+                                <span th:if="${apt.doctor.department != null}" th:text="' • ' + ${apt.doctor.department.name}"> • Department</span>
+                            </small>
+                        </div>
+                    </div>
+                    <div class="text-md-end mt-2 mt-md-0">
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-6">
+                            <i class="bi bi-check-circle-fill me-1"></i>Completed Consultation
+                        </span>
+                        <div class="small text-muted mt-1">
+                            <i class="bi bi-calendar3 me-1"></i><span th:text="${apt.appointmentDate}">2026-10-10</span>
+                            &nbsp;|&nbsp; <i class="bi bi-clock me-1"></i><span th:text="${apt.appointmentTime}">10:00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="mb-3" th:if="${apt.reasonForVisit != null and !#strings.isEmpty(apt.reasonForVisit)}">
+                        <span class="text-muted small fw-bold text-uppercase">Initial Reason for Visit:</span>
+                        <p class="mb-0 text-dark" th:text="${apt.reasonForVisit}">Headache and fever.</p>
+                    </div>
+
+                    <!-- Clinical Consultation Note Details -->
+                    <div th:if="${apt.consultationNote != null}" class="bg-light p-3 rounded border">
+                        <div class="row g-3">
+                            <div class="col-md-6" th:if="${apt.consultationNote.diagnosis != null and !#strings.isEmpty(apt.consultationNote.diagnosis)}">
+                                <h6 class="text-primary fw-bold mb-1"><i class="bi bi-clipboard2-pulse me-1"></i>Diagnosis</h6>
+                                <p class="mb-0 fw-semibold text-dark" th:text="${apt.consultationNote.diagnosis}">Viral Pharyngitis</p>
+                            </div>
+
+                            <div class="col-md-6" th:if="${apt.consultationNote.followUpAdvice != null and !#strings.isEmpty(apt.consultationNote.followUpAdvice)}">
+                                <h6 class="text-primary fw-bold mb-1"><i class="bi bi-calendar-check me-1"></i>Follow-Up Advice</h6>
+                                <p class="mb-0 text-dark" th:text="${apt.consultationNote.followUpAdvice}">Return in 7 days if symptoms persist.</p>
+                            </div>
+
+                            <div class="col-12" th:if="${apt.consultationNote.prescription != null and !#strings.isEmpty(apt.consultationNote.prescription)}">
+                                <h6 class="text-primary fw-bold mb-1"><i class="bi bi-capsule me-1"></i>Prescription & Medications</h6>
+                                <div class="p-2 bg-white rounded border text-pre-line" style="white-space: pre-line;" th:text="${apt.consultationNote.prescription}">
+                                    Paracetamol 500mg - 1 tablet 3 times a day for 3 days
+                                </div>
+                            </div>
+
+                            <div class="col-12" th:if="${apt.consultationNote.notes != null and !#strings.isEmpty(apt.consultationNote.notes)}">
+                                <h6 class="text-secondary fw-bold mb-1"><i class="bi bi-file-text me-1"></i>Doctor's Clinical Notes</h6>
+                                <p class="mb-0 text-muted fst-italic" th:text="${apt.consultationNote.notes}">Patient responded well to preliminary test.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div th:if="${apt.consultationNote == null}" class="alert alert-secondary mb-0 small">
+                        <i class="bi bi-info-circle me-1"></i>No clinical consultation note was recorded for this appointment.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

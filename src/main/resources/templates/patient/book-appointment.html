@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Book Appointment')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<div th:replace="~{fragments/alerts :: alerts}"></div>
+
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/patient/dashboard}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/patient/appointments}">Appointments</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Book Appointment</li>
+                </ol>
+            </nav>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h4 class="card-title mb-0 section-title">
+                        <i class="bi bi-calendar-plus me-2"></i>Book a Doctor Appointment
+                    </h4>
+                    <small class="text-muted">Choose your preferred doctor, select a date, and pick from available time slots.</small>
+                </div>
+                <div class="card-body p-4">
+                    <form th:action="@{/patient/appointments/book}" th:object="${bookingDto}" method="post" id="appointmentForm">
+                        <!-- Select Doctor -->
+                        <div class="mb-4">
+                            <label for="doctorId" class="form-label fw-semibold">
+                                <i class="bi bi-person-badge me-1"></i>Select Doctor <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="doctorId" th:field="*{doctorId}" required>
+                                <option value="">-- Choose a doctor --</option>
+                                <option th:each="doc : ${doctors}"
+                                        th:value="${doc.id}"
+                                        th:text="${doc.user.fullName + ' — ' + doc.specialization + (doc.department != null ? ' (' + doc.department.name + ')' : '') + ' • Fee: ₹' + doc.consultationFee}">
+                                    Dr. Smith — Cardiologist
+                                </option>
+                            </select>
+                            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('doctorId')}" th:errors="*{doctorId}">Doctor selection error</div>
+                        </div>
+
+                        <!-- Select Date -->
+                        <div class="mb-4">
+                            <label for="appointmentDate" class="form-label fw-semibold">
+                                <i class="bi bi-calendar3 me-1"></i>Appointment Date <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" class="form-control" id="appointmentDate" th:field="*{appointmentDate}" required/>
+                            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('appointmentDate')}" th:errors="*{appointmentDate}">Date error</div>
+                        </div>
+
+                        <!-- Time Slot Selection -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-clock me-1"></i>Available Time Slot <span class="text-danger">*</span>
+                            </label>
+                            <div id="slotHint" class="form-text text-muted mb-2">Select a doctor and date above to load available time slots.</div>
+                            <div id="slotsContainer" class="d-flex flex-wrap gap-2 mb-2"></div>
+                            <input type="hidden" id="appointmentTime" th:field="*{appointmentTime}" required/>
+                            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('appointmentTime')}" th:errors="*{appointmentTime}">Time slot error</div>
+                        </div>
+
+                        <!-- Reason for Visit -->
+                        <div class="mb-4">
+                            <label for="reasonForVisit" class="form-label fw-semibold">
+                                <i class="bi bi-chat-left-text me-1"></i>Reason for Visit <span class="text-muted fw-normal">(Optional)</span>
+                            </label>
+                            <textarea class="form-control" id="reasonForVisit" th:field="*{reasonForVisit}" rows="3"
+                                      placeholder="Briefly describe what symptoms you have or why you need this consultation..."></textarea>
+                            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('reasonForVisit')}" th:errors="*{reasonForVisit}">Reason error</div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                            <a th:href="@{/patient/appointments}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-1"></i>Back
+                            </a>
+                            <button type="submit" class="btn btn-primary px-4 py-2 fw-semibold">
+                                <i class="bi bi-calendar-check me-1"></i>Confirm & Book Appointment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/booking.js}"></script>
+</body>
+</html>

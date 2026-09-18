@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Find a Doctor')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<div th:replace="~{fragments/alerts :: alerts}"></div>
+
+<div class="container my-4">
+    <h3 class="section-title mb-3">Find a Doctor</h3>
+
+    <form method="get" th:action="@{/patient/doctors}" class="row g-2 mb-4">
+        <div class="col-md-8">
+            <input type="text" name="q" th:value="${q}" class="form-control" placeholder="Search by name, specialization or department..."/>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Search</button>
+        </div>
+        <div class="col-md-2">
+            <a th:href="@{/patient/doctors}" class="btn btn-outline-secondary w-100">Clear</a>
+        </div>
+    </form>
+
+    <div class="row g-4">
+        <div class="col-md-4" th:each="doctor : ${doctors}">
+            <div class="card doctor-card h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="doctor-avatar me-3" th:text="${#strings.substring(doctor.user.fullName,0,1)}">D</div>
+                        <div>
+                            <h5 class="card-title mb-0" th:text="${doctor.user.fullName}">Dr. Name</h5>
+                            <small class="text-muted" th:text="${doctor.specialization}">Specialization</small>
+                        </div>
+                    </div>
+                    <p class="mb-1"><i class="bi bi-building me-1"></i>
+                        <span th:text="${doctor.department != null ? doctor.department.name : 'General'}">Department</span></p>
+                    <p class="mb-1"><i class="bi bi-award me-1"></i>
+                        <span th:text="${doctor.experienceYears} + ' yrs experience'">Experience</span></p>
+                    <p class="mb-3"><i class="bi bi-cash-coin me-1"></i>
+                        Consultation: <span th:text="'₹' + ${doctor.consultationFee}">Fee</span></p>
+                    <a th:href="@{/patient/doctors/{id}(id=${doctor.id})}" class="btn btn-primary btn-sm w-100">View & Book</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-12" th:if="${#lists.isEmpty(doctors)}">
+            <p class="text-center text-muted">No doctors match your search.</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

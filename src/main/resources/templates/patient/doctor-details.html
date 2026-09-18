@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${doctor.user.fullName} + ' - Doctor Profile')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<div th:replace="~{fragments/alerts :: alerts}"></div>
+
+<div class="container my-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/patient/dashboard}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/patient/doctors}">Find a Doctor</a></li>
+            <li class="breadcrumb-item active" aria-current="page" th:text="${doctor.user.fullName}">Doctor Name</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- Doctor Info Column -->
+        <div class="col-lg-7">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="doctor-avatar me-3 fs-2" th:text="${#strings.substring(doctor.user.fullName,0,1)}">D</div>
+                        <div>
+                            <h3 class="card-title mb-1 section-title" th:text="${doctor.user.fullName}">Dr. Name</h3>
+                            <span class="badge bg-primary fs-6" th:text="${doctor.specialization}">Specialization</span>
+                            <span class="badge bg-light text-dark border ms-1" th:if="${doctor.department != null}" th:text="${doctor.department.name}">Department</span>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 py-3 border-top border-bottom mb-3">
+                        <div class="col-sm-4">
+                            <div class="text-muted small">Experience</div>
+                            <div class="fw-semibold"><i class="bi bi-award me-1"></i><span th:text="${doctor.experienceYears} + ' Years'">0 Years</span></div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="text-muted small">Consultation Fee</div>
+                            <div class="fw-semibold text-success"><i class="bi bi-cash-coin me-1"></i><span th:text="'₹' + ${doctor.consultationFee}">₹0</span></div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="text-muted small">Qualification</div>
+                            <div class="fw-semibold"><i class="bi bi-mortarboard me-1"></i><span th:text="${doctor.qualification}">Degree</span></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-2"><i class="bi bi-person-lines-fill me-1"></i> About the Doctor</h5>
+                        <p class="text-secondary" th:text="${doctor.bio != null and !#strings.isEmpty(doctor.bio) ? doctor.bio : 'Experienced specialist committed to delivering exceptional patient care and clinical excellence.'}">Doctor bio description.</p>
+                    </div>
+
+                    <div>
+                        <h5 class="fw-bold mb-2"><i class="bi bi-clock-history me-1"></i> Weekly Consultation Schedule</h5>
+                        <div class="table-responsive" th:if="${not #lists.isEmpty(doctor.availabilities)}">
+                            <table class="table table-sm table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Day</th>
+                                        <th>Time Slot</th>
+                                        <th>Duration</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="avail : ${doctor.availabilities}">
+                                        <td><span class="badge bg-secondary" th:text="${avail.dayOfWeek}">MONDAY</span></td>
+                                        <td><span th:text="${avail.startTime} + ' - ' + ${avail.endTime}">09:00 - 13:00</span></td>
+                                        <td><span th:text="${avail.slotDurationMinutes} + ' mins'">30 mins</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="text-muted small" th:if="${#lists.isEmpty(doctor.availabilities)}">No weekly consultation slots specified at this moment.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Form Column -->
+        <div class="col-lg-5">
+            <div class="card shadow-sm sticky-top" style="top: 80px;">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="card-title mb-0 section-title"><i class="bi bi-calendar-check me-2"></i>Book Consultation</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form th:action="@{/patient/appointments/book}" th:object="${bookingDto}" method="post" id="bookingForm">
+                        <input type="hidden" id="doctorId" th:field="*{doctorId}" th:value="${doctor.id}"/>
+
+                        <div class="mb-3">
+                            <label for="appointmentDate" class="form-label fw-semibold">Select Appointment Date</label>
+                            <input type="date" class="form-control" id="appointmentDate" th:field="*{appointmentDate}" required/>
+                            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('appointmentDate')}" th:errors="*{appointmentDate}">Invalid date</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Select Time Slot</label>
+                            <div id="slotHint" class="form-text text-muted mb-2">Select a date above to check doctor's available slots.</div>
+                            <div id="slotsContainer" class="d-flex flex-wrap gap-2 mb-2"></div>
+                            <input type="hidden" id="appointmentTime" th:field="*{appointmentTime}" required/>
+                            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('appointmentTime')}" th:errors="*{appointmentTime}">Please select a time slot</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="reasonForVisit" class="form-label fw-semibold">Reason for Visit <span class="text-muted fw-normal">(Optional)</span></label>
+                            <textarea class="form-control" id="reasonForVisit" th:field="*{reasonForVisit}" rows="3" placeholder="Briefly describe your symptoms or purpose of visit..."></textarea>
+                            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('reasonForVisit')}" th:errors="*{reasonForVisit}"></div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                            <i class="bi bi-check-circle me-1"></i> Confirm Appointment Request
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/booking.js}"></script>
+</body>
+</html>

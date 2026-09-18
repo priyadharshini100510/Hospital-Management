@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Sign Up')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<div class="container">
+    <div class="card auth-card shadow-sm">
+        <div class="card-body p-4">
+            <h3 class="text-center section-title mb-4"><i class="bi bi-person-plus-fill me-1"></i> Patient Sign Up</h3>
+
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+            <form th:action="@{/auth/register}" th:object="${patientRegistrationDto}" method="post">
+                <div class="mb-3">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" th:field="*{fullName}" class="form-control" required/>
+                    <div class="text-danger small" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" th:field="*{email}" class="form-control" required/>
+                    <div class="text-danger small" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" th:field="*{password}" class="form-control" required/>
+                    <div class="text-danger small" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Phone</label>
+                    <input type="text" th:field="*{phone}" class="form-control"/>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Date of Birth</label>
+                        <input type="date" th:field="*{dateOfBirth}" class="form-control"/>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Gender</label>
+                        <select th:field="*{gender}" class="form-select">
+                            <option value="">Select</option>
+                            <option value="MALE">Male</option>
+                            <option value="FEMALE">Female</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Address</label>
+                    <textarea th:field="*{address}" class="form-control" rows="2"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Create Account</button>
+            </form>
+
+            <hr/>
+            <p class="text-center mb-0">Already have an account? <a th:href="@{/auth/login}">Login</a></p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

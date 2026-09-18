@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Login')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<div class="container">
+    <div class="card auth-card shadow-sm">
+        <div class="card-body p-4">
+            <h3 class="text-center section-title mb-4"><i class="bi bi-box-arrow-in-right me-1"></i> Login</h3>
+
+            <div th:if="${registered}" class="alert alert-success">
+                Registration successful! Please login with your new account.
+            </div>
+            <div th:if="${param.error}" class="alert alert-danger">
+                Invalid email or password. Please try again.
+            </div>
+            <div th:if="${param.logout}" class="alert alert-info">
+                You have been logged out.
+            </div>
+
+            <form th:action="@{/auth/login}" method="post">
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="username" class="form-control" placeholder="you@example.com" required autofocus/>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" placeholder="••••••••" required/>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Login</button>
+            </form>
+
+            <hr/>
+            <p class="text-center mb-1">New patient? <a th:href="@{/auth/register}">Create an account</a></p>
+            <div class="alert alert-light border mt-3 small">
+                <strong>Demo accounts:</strong><br/>
+                Admin: admin&#64;hospital.com / admin123<br/>
+                Doctor: dr.kumar&#64;hospital.com / doctor123<br/>
+                Patient: register your own via Sign Up
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Appointment Details')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<div th:replace="~{fragments/alerts :: alerts}"></div>
+
+<div class="container my-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/doctor/dashboard}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/doctor/appointments}">Appointments</a></li>
+            <li class="breadcrumb-item active" aria-current="page" th:text="'Appointment #' + ${appointment.id}">Appointment Details</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h3 class="section-title mb-1">
+                <i class="bi bi-person-lines-fill me-2"></i>Appointment Details
+            </h3>
+            <span class="text-muted">Appointment ID: #<span th:text="${appointment.id}">1</span></span>
+        </div>
+        <div class="mt-2 mt-md-0 d-flex align-items-center gap-2">
+            <span class="badge-status fs-6" th:classappend="'badge-' + ${appointment.status}" th:text="${appointment.status}">STATUS</span>
+            <a th:href="@{/doctor/appointments}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>Back
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Patient Information & Visit Details -->
+        <div class="col-lg-5">
+            <!-- Patient Profile Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="card-title mb-0 fw-bold"><i class="bi bi-person-circle text-primary me-2"></i>Patient Profile</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="doctor-avatar me-3" style="width: 50px; height: 50px; font-size: 1.2rem;"
+                             th:text="${#strings.substring(appointment.patient.user.fullName,0,1)}">P</div>
+                        <div>
+                            <h5 class="mb-0 fw-bold" th:text="${appointment.patient.user.fullName}">Patient Name</h5>
+                            <small class="text-muted" th:text="${appointment.patient.user.email}">patient@example.com</small>
+                        </div>
+                    </div>
+
+                    <ul class="list-group list-group-flush small">
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Phone:</span>
+                            <span class="fw-semibold" th:text="${appointment.patient.user.phone != null ? appointment.patient.user.phone : 'N/A'}">Phone</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Gender:</span>
+                            <span class="fw-semibold" th:text="${appointment.patient.gender != null ? appointment.patient.gender : 'Not specified'}">Gender</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Date of Birth:</span>
+                            <span class="fw-semibold" th:text="${appointment.patient.dateOfBirth != null ? appointment.patient.dateOfBirth : 'N/A'}">DOB</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Blood Group:</span>
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-bold"
+                                  th:text="${appointment.patient.bloodGroup != null ? appointment.patient.bloodGroup : 'Unknown'}">O+</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0" th:if="${appointment.patient.emergencyContactName != null}">
+                            <span class="text-muted">Emergency Contact:</span>
+                            <span class="fw-semibold" th:text="${appointment.patient.emergencyContactName} + ' (' + ${appointment.patient.emergencyContactPhone} + ')'">Contact</span>
+                        </li>
+                        <li class="list-group-item px-0" th:if="${appointment.patient.allergies != null and !#strings.isEmpty(appointment.patient.allergies)}">
+                            <span class="text-muted d-block mb-1">Known Allergies:</span>
+                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle p-2 text-wrap d-block"
+                                  th:text="${appointment.patient.allergies}">Penicillin</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Visit Details Card -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="card-title mb-0 fw-bold"><i class="bi bi-calendar-event text-primary me-2"></i>Visit Schedule</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <strong class="text-muted d-block small">DATE & TIME:</strong>
+                        <i class="bi bi-calendar3 me-1 text-primary"></i> <span class="fw-bold" th:text="${appointment.appointmentDate}">Date</span>
+                        &nbsp;|&nbsp; <i class="bi bi-clock me-1 text-primary"></i> <span class="fw-bold" th:text="${appointment.appointmentTime}">Time</span>
+                    </p>
+                    <div class="mb-2">
+                        <strong class="text-muted d-block small">REASON FOR VISIT:</strong>
+                        <p class="mb-0 bg-light p-2 rounded text-secondary" th:text="${appointment.reasonForVisit != null and !#strings.isEmpty(appointment.reasonForVisit) ? appointment.reasonForVisit : 'General consultation'}">Reason</p>
+                    </div>
+                    <div th:if="${appointment.cancellationReason != null and !#strings.isEmpty(appointment.cancellationReason)}">
+                        <strong class="text-danger d-block small">CANCELLATION REASON:</strong>
+                        <p class="mb-0 text-danger bg-danger-subtle p-2 rounded small" th:text="${appointment.cancellationReason}">Reason</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clinical & Action Column -->
+        <div class="col-lg-7">
+            <!-- 1. PENDING Actions -->
+            <div class="card shadow-sm border-warning mb-4" th:if="${appointment.status.name() == 'PENDING'}">
+                <div class="card-header bg-warning bg-opacity-10 py-3">
+                    <h5 class="card-title mb-0 text-warning-emphasis fw-bold">
+                        <i class="bi bi-hourglass-split me-2"></i>Pending Appointment Request
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <p>This patient is requesting an appointment on <strong th:text="${appointment.appointmentDate}">Date</strong> at <strong th:text="${appointment.appointmentTime}">Time</strong>. You can confirm or reject this booking request.</p>
+                    <div class="d-flex gap-2">
+                        <form th:action="@{/doctor/appointments/{id}/status(id=${appointment.id})}" method="post">
+                            <input type="hidden" name="status" value="CONFIRMED"/>
+                            <button type="submit" class="btn btn-success px-4 fw-semibold">
+                                <i class="bi bi-check-circle me-1"></i>Accept & Confirm
+                            </button>
+                        </form>
+
+                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                            <i class="bi bi-x-circle me-1"></i>Reject Request
+                        </button>
+                    </div>
+
+                    <!-- Reject Modal -->
+                    <div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form th:action="@{/doctor/appointments/{id}/status(id=${appointment.id})}" method="post">
+                                    <input type="hidden" name="status" value="REJECTED"/>
+                                    <div class="modal-header">
+                                        <h5 class="modal-title text-danger"><i class="bi bi-x-octagon me-1"></i>Reject Appointment</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Please enter the reason for rejecting this appointment request:</p>
+                                        <textarea name="reason" class="form-control" rows="3" placeholder="e.g., Doctor unavailable due to surgery..."></textarea>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. CONFIRMED Actions: Consultation Form & No-Show Option -->
+            <div class="card shadow-sm border-primary mb-4" th:if="${appointment.status.name() == 'CONFIRMED'}">
+                <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-bold">
+                        <i class="bi bi-clipboard2-pulse me-2"></i>Consultation & Clinical Notes
+                    </h5>
+                    <form th:action="@{/doctor/appointments/{id}/status(id=${appointment.id})}" method="post" class="d-inline">
+                        <input type="hidden" name="status" value="NO_SHOW"/>
+                        <button type="submit" class="btn btn-sm btn-outline-light" onclick="return confirm('Mark this patient as NO SHOW?')">
+                            <i class="bi bi-person-x me-1"></i>Mark No-Show
+                        </button>
+                    </form>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-muted small mb-3">Entering consultation notes and diagnosis will automatically mark this appointment as <strong>COMPLETED</strong> and save the record to the patient's medical history.</p>
+
+                    <form th:action="@{/doctor/appointments/{id}/notes(id=${appointment.id})}" th:object="${noteDto}" method="post">
+                        <div class="mb-3">
+                            <label for="diagnosis" class="form-label fw-bold">Diagnosis <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="diagnosis" th:field="*{diagnosis}" placeholder="e.g. Acute Bronchitis, Essential Hypertension" required/>
+                            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('diagnosis')}" th:errors="*{diagnosis}">Diagnosis is required</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="prescription" class="form-label fw-bold">Prescription / Medications</label>
+                            <textarea class="form-control" id="prescription" th:field="*{prescription}" rows="4" placeholder="Medication name, dosage, frequency, duration&#10;e.g. Amoxicillin 500mg - 1 capsule twice daily for 7 days"></textarea>
+                            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('prescription')}" th:errors="*{prescription}"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notes" class="form-label fw-bold">Clinical Notes & Observations</label>
+                            <textarea class="form-control" id="notes" th:field="*{notes}" rows="3" placeholder="Symptoms reported, physical exam findings, vital signs..."></textarea>
+                            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('notes')}" th:errors="*{notes}"></div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="followUpAdvice" class="form-label fw-bold">Follow-Up Advice & Next Steps</label>
+                            <input type="text" class="form-control" id="followUpAdvice" th:field="*{followUpAdvice}" placeholder="e.g. Follow up in 2 weeks or if symptoms worsen"/>
+                            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('followUpAdvice')}" th:errors="*{followUpAdvice}"></div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success px-4 py-2 fw-semibold">
+                            <i class="bi bi-check2-all me-1"></i>Complete Consultation & Save Record
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 3. COMPLETED Consultation Record Display -->
+            <div class="card shadow-sm border-success" th:if="${appointment.status.name() == 'COMPLETED'}">
+                <div class="card-header bg-success text-white py-3">
+                    <h5 class="card-title mb-0 fw-bold">
+                        <i class="bi bi-file-earmark-check me-2"></i>Consultation Completed
+                    </h5>
+                </div>
+                <div class="card-body p-4" th:if="${appointment.consultationNote != null}">
+                    <div class="mb-3">
+                        <strong class="text-muted d-block small">DIAGNOSIS:</strong>
+                        <h5 class="text-primary fw-bold" th:text="${appointment.consultationNote.diagnosis}">Diagnosis</h5>
+                    </div>
+
+                    <div class="mb-3" th:if="${appointment.consultationNote.prescription != null and !#strings.isEmpty(appointment.consultationNote.prescription)}">
+                        <strong class="text-muted d-block small">PRESCRIPTION:</strong>
+                        <div class="bg-light p-3 rounded border text-pre-line" style="white-space: pre-line;"
+                             th:text="${appointment.consultationNote.prescription}">Prescription Details</div>
+                    </div>
+
+                    <div class="mb-3" th:if="${appointment.consultationNote.notes != null and !#strings.isEmpty(appointment.consultationNote.notes)}">
+                        <strong class="text-muted d-block small">DOCTOR'S NOTES:</strong>
+                        <p class="bg-light p-3 rounded border text-secondary mb-0" th:text="${appointment.consultationNote.notes}">Notes</p>
+                    </div>
+
+                    <div class="mb-3" th:if="${appointment.consultationNote.followUpAdvice != null and !#strings.isEmpty(appointment.consultationNote.followUpAdvice)}">
+                        <strong class="text-muted d-block small">FOLLOW-UP ADVICE:</strong>
+                        <p class="text-dark fw-semibold" th:text="${appointment.consultationNote.followUpAdvice}">Follow-up advice</p>
+                    </div>
+                </div>
+                <div class="card-body text-muted" th:if="${appointment.consultationNote == null}">
+                    No consultation notes were recorded for this visit.
+                </div>
+            </div>
+
+            <!-- 4. CANCELLED / REJECTED Info -->
+            <div class="card shadow-sm" th:if="${appointment.status.name() == 'CANCELLED' or appointment.status.name() == 'REJECTED' or appointment.status.name() == 'NO_SHOW'}">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-info-circle text-muted fs-1 mb-2 d-block"></i>
+                    <h5 class="text-secondary" th:text="'Appointment is ' + ${appointment.status}">Status</h5>
+                    <p class="text-muted" th:if="${appointment.cancellationReason != null}" th:text="'Reason: ' + ${appointment.cancellationReason}">Reason</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

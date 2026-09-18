@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('My Appointments')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<div th:replace="~{fragments/alerts :: alerts}"></div>
+
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="section-title mb-1"><i class="bi bi-calendar2-check me-2"></i>My Appointments</h3>
+            <p class="text-muted mb-0">View all your scheduled, completed, and past consultation requests.</p>
+        </div>
+        <a th:href="@{/patient/appointments/book}" class="btn btn-primary">
+            <i class="bi bi-calendar-plus me-1"></i>Book New Appointment
+        </a>
+    </div>
+
+    <!-- Empty State -->
+    <div class="card shadow-sm text-center py-5" th:if="${#lists.isEmpty(appointments)}">
+        <div class="card-body">
+            <i class="bi bi-calendar-x text-muted display-4 mb-3 d-block"></i>
+            <h5 class="text-secondary">No appointments found</h5>
+            <p class="text-muted">You haven't booked any consultations yet.</p>
+            <a th:href="@{/patient/appointments/book}" class="btn btn-primary mt-2">
+                <i class="bi bi-calendar-plus me-1"></i>Book an Appointment Now
+            </a>
+        </div>
+    </div>
+
+    <!-- Appointments Table -->
+    <div class="card shadow-sm" th:if="${not #lists.isEmpty(appointments)}">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Doctor</th>
+                        <th>Department</th>
+                        <th>Date & Time</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th class="text-end pe-3">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="apt : ${appointments}">
+                        <td class="ps-3">
+                            <div class="d-flex align-items-center">
+                                <div class="doctor-avatar me-2" style="width: 38px; height: 38px; font-size: 1rem;"
+                                     th:text="${#strings.substring(apt.doctor.user.fullName,0,1)}">D</div>
+                                <div>
+                                    <div class="fw-bold" th:text="${apt.doctor.user.fullName}">Dr. Name</div>
+                                    <small class="text-muted" th:text="${apt.doctor.specialization}">Specialization</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border"
+                                  th:text="${apt.doctor.department != null ? apt.doctor.department.name : 'General'}">Department</span>
+                        </td>
+                        <td>
+                            <div><i class="bi bi-calendar3 me-1 text-primary"></i><span class="fw-semibold" th:text="${apt.appointmentDate}">2026-10-10</span></div>
+                            <small class="text-muted"><i class="bi bi-clock me-1"></i><span th:text="${apt.appointmentTime}">10:00</span></small>
+                        </td>
+                        <td>
+                            <span class="text-muted small" th:text="${apt.reasonForVisit != null and !#strings.isEmpty(apt.reasonForVisit) ? apt.reasonForVisit : 'General Consultation'}">Reason</span>
+                        </td>
+                        <td>
+                            <span class="badge-status" th:classappend="'badge-' + ${apt.status}" th:text="${apt.status}">STATUS</span>
+                            <div th:if="${apt.cancellationReason != null and !#strings.isEmpty(apt.cancellationReason)}" class="small text-danger mt-1">
+                                <i class="bi bi-info-circle me-1"></i><span th:text="${apt.cancellationReason}">Reason</span>
+                            </div>
+                        </td>
+                        <td class="text-end pe-3">
+                            <!-- Cancel Action (Available for PENDING or CONFIRMED) -->
+                            <button th:if="${apt.status.name() == 'PENDING' or apt.status.name() == 'CONFIRMED'}"
+                                    type="button" class="btn btn-outline-danger btn-sm"
+                                    data-bs-toggle="modal" th:data-bs-target="'#cancelModal-' + ${apt.id}">
+                                <i class="bi bi-x-circle me-1"></i>Cancel
+                            </button>
+                            <span th:if="${apt.status.name() == 'COMPLETED'}" class="badge bg-success-subtle text-success border border-success-subtle">
+                                <i class="bi bi-check2-circle me-1"></i>Completed
+                            </span>
+                            <span th:if="${apt.status.name() == 'CANCELLED' or apt.status.name() == 'REJECTED' or apt.status.name() == 'NO_SHOW'}" class="text-muted small">
+                                &mdash;
+                            </span>
+
+                            <!-- Cancel Modal -->
+                            <div th:if="${apt.status.name() == 'PENDING' or apt.status.name() == 'CONFIRMED'}"
+                                 class="modal fade" th:id="'cancelModal-' + ${apt.id}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog text-start">
+                                    <div class="modal-content">
+                                        <form th:action="@{/patient/appointments/{id}/cancel(id=${apt.id})}" method="post">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle me-1"></i>Cancel Appointment</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Are you sure you want to cancel your appointment with <strong th:text="${apt.doctor.user.fullName}">Doctor</strong> on <strong th:text="${apt.appointmentDate} + ' at ' + ${apt.appointmentTime}">Date & Time</strong>?</p>
+                                                <div class="mb-3">
+                                                    <label for="reasonInput" class="form-label">Reason for Cancellation (Optional):</label>
+                                                    <textarea name="reason" id="reasonInput" class="form-control" rows="2" placeholder="e.g., Schedule conflict, feeling better..."></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Appointment</button>
+                                                <button type="submit" class="btn btn-danger">Confirm Cancellation</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

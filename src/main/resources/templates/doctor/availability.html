@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Weekly Availability')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<div th:replace="~{fragments/alerts :: alerts}"></div>
+
+<div class="container my-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="section-title mb-1"><i class="bi bi-clock-history me-2"></i>Weekly Consultation Availability</h3>
+            <p class="text-muted mb-0">Define recurring weekly time windows when patients can book appointments with you.</p>
+        </div>
+        <div class="mt-2 mt-md-0">
+            <a th:href="@{/doctor/dashboard}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Current Schedule List -->
+        <div class="col-lg-7">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-bold"><i class="bi bi-calendar3-week text-primary me-2"></i>Active Availability Windows</h5>
+                    <span class="badge bg-primary rounded-pill" th:text="${#lists.size(availabilities)} + ' slots'">0 slots</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive" th:if="${not #lists.isEmpty(availabilities)}">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Day of Week</th>
+                                    <th>Working Hours</th>
+                                    <th>Slot Length</th>
+                                    <th class="text-end pe-3">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="slot : ${availabilities}">
+                                    <td class="ps-3">
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 fs-6"
+                                              th:text="${slot.dayOfWeek}">MONDAY</span>
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-clock me-1 text-muted"></i>
+                                        <strong th:text="${slot.startTime} + ' – ' + ${slot.endTime}">09:00 – 13:00</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border" th:text="${slot.slotDurationMinutes} + ' mins'">30 mins</span>
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <form th:action="@{/doctor/availability/{id}/delete(id=${slot.id})}" method="post" class="d-inline"
+                                              onsubmit="return confirm('Are you sure you want to remove this availability window?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove slot">
+                                                <i class="bi bi-trash3"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center py-5" th:if="${#lists.isEmpty(availabilities)}">
+                        <i class="bi bi-calendar-x text-muted display-4 mb-2 d-block"></i>
+                        <h5 class="text-secondary">No availability slots set</h5>
+                        <p class="text-muted mb-0">Add your regular consultation hours using the form on the right.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Slot Form -->
+        <div class="col-lg-5">
+            <div class="card shadow-sm sticky-top" style="top: 80px;">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="card-title mb-0 section-title"><i class="bi bi-plus-circle me-2"></i>Add Availability Slot</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form th:action="@{/doctor/availability}" th:object="${availabilityDto}" method="post">
+                        <!-- Day of Week -->
+                        <div class="mb-3">
+                            <label for="dayOfWeek" class="form-label fw-semibold">Day of the Week <span class="text-danger">*</span></label>
+                            <select class="form-select" id="dayOfWeek" th:field="*{dayOfWeek}" required>
+                                <option value="">-- Choose Day --</option>
+                                <option value="MONDAY">Monday</option>
+                                <option value="TUESDAY">Tuesday</option>
+                                <option value="WEDNESDAY">Wednesday</option>
+                                <option value="THURSDAY">Thursday</option>
+                                <option value="FRIDAY">Friday</option>
+                                <option value="SATURDAY">Saturday</option>
+                                <option value="SUNDAY">Sunday</option>
+                            </select>
+                            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('dayOfWeek')}" th:errors="*{dayOfWeek}"></div>
+                        </div>
+
+                        <!-- Start Time -->
+                        <div class="mb-3">
+                            <label for="startTime" class="form-label fw-semibold">Start Time <span class="text-danger">*</span></label>
+                            <input type="time" class="form-control" id="startTime" th:field="*{startTime}" required/>
+                            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('startTime')}" th:errors="*{startTime}"></div>
+                        </div>
+
+                        <!-- End Time -->
+                        <div class="mb-3">
+                            <label for="endTime" class="form-label fw-semibold">End Time <span class="text-danger">*</span></label>
+                            <input type="time" class="form-control" id="endTime" th:field="*{endTime}" required/>
+                            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('endTime')}" th:errors="*{endTime}"></div>
+                        </div>
+
+                        <!-- Slot Duration -->
+                        <div class="mb-4">
+                            <label for="slotDurationMinutes" class="form-label fw-semibold">Slot Duration</label>
+                            <select class="form-select" id="slotDurationMinutes" th:field="*{slotDurationMinutes}">
+                                <option value="15">15 Minutes</option>
+                                <option value="20">20 Minutes</option>
+                                <option value="30" selected>30 Minutes (Recommended)</option>
+                                <option value="45">45 Minutes</option>
+                                <option value="60">60 Minutes</option>
+                            </select>
+                            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('slotDurationMinutes')}" th:errors="*{slotDurationMinutes}"></div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                            <i class="bi bi-calendar-plus me-1"></i>Add Availability Window
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${patient.user.fullName} + ' - Patient Details')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<div th:replace="~{fragments/alerts :: alerts}"></div>
+
+<div class="container my-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/admin/patients}">Patients</a></li>
+            <li class="breadcrumb-item active" aria-current="page" th:text="${patient.user.fullName}">Patient Details</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h3 class="section-title mb-1">
+                <i class="bi bi-person-lines-fill me-2"></i>Patient Profile & Records
+            </h3>
+            <span class="text-muted">Patient ID: #<span th:text="${patient.id}">1</span></span>
+        </div>
+        <div class="mt-2 mt-md-0">
+            <a th:href="@{/admin/patients}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to Patients
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Patient Demographics Card -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="card-title mb-0 fw-bold"><i class="bi bi-person-badge text-primary me-2"></i>Demographics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="doctor-avatar me-3 fs-3" style="width: 54px; height: 54px;"
+                             th:text="${#strings.substring(patient.user.fullName,0,1)}">P</div>
+                        <div>
+                            <h5 class="mb-0 fw-bold" th:text="${patient.user.fullName}">Patient Name</h5>
+                            <small class="text-muted" th:text="${patient.user.email}">patient@example.com</small>
+                        </div>
+                    </div>
+
+                    <ul class="list-group list-group-flush small">
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Phone:</span>
+                            <span class="fw-semibold" th:text="${patient.user.phone != null ? patient.user.phone : 'N/A'}">Phone</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Gender:</span>
+                            <span class="fw-semibold" th:text="${patient.gender != null ? patient.gender : 'Not specified'}">Gender</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Date of Birth:</span>
+                            <span class="fw-semibold" th:text="${patient.dateOfBirth != null ? patient.dateOfBirth : 'N/A'}">DOB</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Blood Group:</span>
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-bold"
+                                  th:text="${patient.bloodGroup != null and !#strings.isEmpty(patient.bloodGroup) ? patient.bloodGroup : 'Unknown'}">O+</span>
+                        </li>
+                        <li class="list-group-item px-0">
+                            <span class="text-muted d-block">Residential Address:</span>
+                            <span class="text-dark" th:text="${patient.address != null and !#strings.isEmpty(patient.address) ? patient.address : 'No address provided'}">Address</span>
+                        </li>
+                        <li class="list-group-item px-0" th:if="${patient.emergencyContactName != null}">
+                            <span class="text-muted d-block">Emergency Contact:</span>
+                            <span class="fw-semibold" th:text="${patient.emergencyContactName} + ' (' + ${patient.emergencyContactPhone} + ')'">Contact</span>
+                        </li>
+                        <li class="list-group-item px-0" th:if="${patient.allergies != null and !#strings.isEmpty(patient.allergies)}">
+                            <span class="text-muted d-block mb-1">Known Allergies:</span>
+                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle p-2 text-wrap d-block"
+                                  th:text="${patient.allergies}">Penicillin</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointment History -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-bold">
+                        <i class="bi bi-clock-history text-primary me-2"></i>Consultation History
+                    </h5>
+                    <span class="badge bg-secondary rounded-pill" th:text="${#lists.size(appointments)} + ' visits'">0 visits</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive" th:if="${not #lists.isEmpty(appointments)}">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Doctor</th>
+                                    <th>Department</th>
+                                    <th>Date & Time</th>
+                                    <th>Status</th>
+                                    <th>Diagnosis / Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="apt : ${appointments}">
+                                    <td class="ps-3">
+                                        <div class="fw-bold" th:text="${apt.doctor.user.fullName}">Dr. Name</div>
+                                        <small class="text-muted" th:text="${apt.doctor.specialization}">Specialization</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border"
+                                              th:text="${apt.doctor.department != null ? apt.doctor.department.name : 'General'}">Department</span>
+                                    </td>
+                                    <td>
+                                        <div><i class="bi bi-calendar3 me-1 text-primary"></i><span th:text="${apt.appointmentDate}">Date</span></div>
+                                        <small class="text-muted"><i class="bi bi-clock me-1"></i><span th:text="${apt.appointmentTime}">Time</span></small>
+                                    </td>
+                                    <td>
+                                        <span class="badge-status" th:classappend="'badge-' + ${apt.status}" th:text="${apt.status}">STATUS</span>
+                                    </td>
+                                    <td>
+                                        <div th:if="${apt.consultationNote != null}">
+                                            <span class="fw-semibold text-primary small d-block" th:text="${apt.consultationNote.diagnosis}">Diagnosis</span>
+                                            <small class="text-muted text-truncate d-inline-block" style="max-width: 180px;"
+                                                   th:if="${apt.consultationNote.prescription != null}"
+                                                   th:text="${apt.consultationNote.prescription}">Rx</small>
+                                        </div>
+                                        <span th:if="${apt.consultationNote == null}" class="text-muted small">
+                                            <span th:text="${apt.reasonForVisit != null ? apt.reasonForVisit : '—'}">Reason</span>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center py-5" th:if="${#lists.isEmpty(appointments)}">
+                        <i class="bi bi-calendar-x text-muted display-4 mb-2 d-block"></i>
+                        <h6 class="text-secondary">No appointments recorded</h6>
+                        <p class="text-muted mb-0">This patient has not booked any consultations yet.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${doctorId != null ? 'Edit Doctor' : 'Add New Doctor'})}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<div th:replace="~{fragments/alerts :: alerts}"></div>
+
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/admin/doctors}">Doctors</a></li>
+                    <li class="breadcrumb-item active" aria-current="page" th:text="${doctorId != null ? 'Edit Doctor' : 'New Doctor'}">Doctor Form</li>
+                </ol>
+            </nav>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
+                    <div class="doctor-avatar me-3" style="width: 48px; height: 48px; font-size: 1.2rem;">
+                        <i class="bi" th:classappend="${doctorId != null} ? 'bi-person-gear' : 'bi-person-plus'"></i>
+                    </div>
+                    <div>
+                        <h4 class="card-title mb-0 section-title" th:text="${doctorId != null ? 'Edit Doctor Profile' : 'Add New Doctor'}">Doctor Profile Form</h4>
+                        <small class="text-muted" th:text="${doctorId != null ? 'Update existing physician information and clinical assignment' : 'Register a new physician account and clinical profile'}">Subtitle</small>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <form th:action="${doctorId != null ? '/admin/doctors/' + doctorId + '/update' : '/admin/doctors'}"
+                          th:object="${doctorDto}" method="post">
+
+                        <!-- Account Credentials Section -->
+                        <h5 class="fw-bold text-primary mb-3"><i class="bi bi-shield-lock me-2"></i>Account & Login Credentials</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="fullName" class="form-label fw-semibold">Doctor's Full Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="fullName" th:field="*{fullName}" placeholder="e.g., Dr. Jane Doe" required/>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="email" class="form-label fw-semibold">Email Address (Username) <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="email" th:field="*{email}" placeholder="doctor@hospital.com" required
+                                       th:readonly="${doctorId != null}"/>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="password" class="form-label fw-semibold">
+                                    Account Password
+                                    <span th:if="${doctorId == null}" class="text-danger">*</span>
+                                    <span th:if="${doctorId != null}" class="text-muted fw-normal">(Leave blank to keep current)</span>
+                                </label>
+                                <input type="password" class="form-control" id="password" th:field="*{password}"
+                                       placeholder="••••••••" th:required="${doctorId == null}"/>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label fw-semibold">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" th:field="*{phone}" placeholder="e.g., +91 9876543210"/>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
+                            </div>
+                        </div>
+
+                        <!-- Clinical Details Section -->
+                        <h5 class="fw-bold text-primary mb-3 border-top pt-3"><i class="bi bi-heart-pulse me-2"></i>Clinical & Professional Information</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="departmentId" class="form-label fw-semibold">Department <span class="text-danger">*</span></label>
+                                <select class="form-select" id="departmentId" th:field="*{departmentId}" required>
+                                    <option value="">-- Choose Department --</option>
+                                    <option th:each="dept : ${departments}"
+                                            th:value="${dept.id}"
+                                            th:text="${dept.name}">
+                                        Cardiology
+                                    </option>
+                                </select>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('departmentId')}" th:errors="*{departmentId}"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="specialization" class="form-label fw-semibold">Specialization <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="specialization" th:field="*{specialization}" placeholder="e.g., Interventional Cardiologist" required/>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('specialization')}" th:errors="*{specialization}"></div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="qualification" class="form-label fw-semibold">Qualifications</label>
+                                <input type="text" class="form-control" id="qualification" th:field="*{qualification}" placeholder="e.g., MBBS, MD, FRCS"/>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('qualification')}" th:errors="*{qualification}"></div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="experienceYears" class="form-label fw-semibold">Years of Experience</label>
+                                <input type="number" class="form-control" id="experienceYears" th:field="*{experienceYears}" min="0" max="60" placeholder="e.g., 8"/>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('experienceYears')}" th:errors="*{experienceYears}"></div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="consultationFee" class="form-label fw-semibold">Consultation Fee (₹)</label>
+                                <input type="number" class="form-control" id="consultationFee" th:field="*{consultationFee}" min="0" step="10" placeholder="e.g., 600"/>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('consultationFee')}" th:errors="*{consultationFee}"></div>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="bio" class="form-label fw-semibold">Biography & Professional Summary</label>
+                                <textarea class="form-control" id="bio" th:field="*{bio}" rows="3" placeholder="Brief clinical background, special interests, and patient philosophy..."></textarea>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('bio')}" th:errors="*{bio}"></div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                            <a th:href="@{/admin/doctors}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-1"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                                <i class="bi bi-check2-circle me-1"></i>
+                                <span th:text="${doctorId != null ? 'Update Doctor Profile' : 'Save & Register Doctor'}">Submit</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

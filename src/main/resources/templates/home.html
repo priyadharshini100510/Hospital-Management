@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head('Home')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<section class="hero-section text-center">
+    <div class="container">
+        <h1 class="display-5 mb-3">Quality Healthcare, Simplified</h1>
+        <p class="lead mb-4">Book appointments with trusted doctors, manage your medical history, and stay on top of your care — all in one place.</p>
+        <div sec:authorize="isAnonymous()">
+            <a th:href="@{/auth/register}" class="btn btn-light btn-lg me-2">Get Started</a>
+            <a th:href="@{/auth/login}" class="btn btn-outline-light btn-lg">Login</a>
+        </div>
+        <div sec:authorize="hasRole('PATIENT')">
+            <a th:href="@{/patient/appointments/book}" class="btn btn-light btn-lg">Book an Appointment</a>
+        </div>
+    </div>
+</section>
+
+<div class="container my-5">
+    <h2 class="section-title mb-4 text-center">Our Doctors</h2>
+    <div class="row g-4">
+        <div class="col-md-4" th:each="doctor : ${doctors}">
+            <div class="card doctor-card h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="doctor-avatar me-3" th:text="${#strings.substring(doctor.user.fullName,0,1)}">D</div>
+                        <div>
+                            <h5 class="card-title mb-0" th:text="${doctor.user.fullName}">Dr. Name</h5>
+                            <small class="text-muted" th:text="${doctor.specialization}">Specialization</small>
+                        </div>
+                    </div>
+                    <p class="mb-1"><i class="bi bi-building me-1"></i>
+                        <span th:text="${doctor.department != null ? doctor.department.name : 'General'}">Department</span></p>
+                    <p class="mb-1"><i class="bi bi-award me-1"></i>
+                        <span th:text="${doctor.experienceYears} + ' yrs experience'">Experience</span></p>
+                    <p class="mb-3"><i class="bi bi-cash-coin me-1"></i>
+                        Consultation: <span th:text="'₹' + ${doctor.consultationFee}">Fee</span></p>
+                    <a sec:authorize="hasRole('PATIENT')" th:href="@{/patient/doctors/{id}(id=${doctor.id})}" class="btn btn-primary btn-sm w-100">View & Book</a>
+                    <a sec:authorize="isAnonymous()" th:href="@{/auth/login}" class="btn btn-outline-primary btn-sm w-100">Login to Book</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-12" th:if="${#lists.isEmpty(doctors)}">
+            <p class="text-center text-muted">No doctors available right now. Please check back soon.</p>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <div class="container text-center">
+        <p class="mb-1"><i class="bi bi-heart-pulse-fill"></i> MediCare Hospital Management System</p>
+        <p class="mb-0 small">A demo project — Patients, Doctors and Administrators in one platform.</p>
+    </div>
+</footer>
+</body>
+</html>
