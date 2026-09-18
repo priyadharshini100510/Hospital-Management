@@ -3,7 +3,7 @@
  * Supports session cookies (credentials: include) and JSON request/response handling.
  */
 
-const API_BASE = window.API_BASE || '';
+const API_BASE = window.API_BASE || 'https://hospital-management-sim9.onrender.com';
 
 const api = {
     async request(url, options = {}) {
